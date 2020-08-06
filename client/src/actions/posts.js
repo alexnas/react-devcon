@@ -6,6 +6,8 @@ import {
   UPDATE_LIKES,
   DELETE_POST,
   ADD_POST,
+  ADD_COMMENT,
+  REMOVE_COMMENT,
 } from '../actions/types';
 import { setAlert } from './alert';
 
@@ -77,6 +79,31 @@ export const removeLike = (id) => async (dispatch) => {
   }
 };
 
+// Add post
+export const addPost = (formData) => async (dispatch) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+
+  try {
+    const res = await axios.post('/api/posts', formData, config);
+
+    dispatch({
+      type: ADD_POST,
+      payload: res.data,
+    });
+
+    dispatch(setAlert('Post Created', 'success'));
+  } catch (err) {
+    dispatch({
+      type: POST_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status },
+    });
+  }
+};
+
 // Delete post
 export const deletePost = (id) => async (dispatch) => {
   try {
@@ -96,8 +123,8 @@ export const deletePost = (id) => async (dispatch) => {
   }
 };
 
-// Add post
-export const addPost = (formData) => async (dispatch) => {
+// Add comment
+export const addComment = (postId, formData) => async (dispatch) => {
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -105,14 +132,37 @@ export const addPost = (formData) => async (dispatch) => {
   };
 
   try {
-    const res = await axios.post('/api/posts', formData, config);
+    const res = await axios.post(
+      `/api/posts/comment/${postId}`,
+      formData,
+      config
+    );
 
     dispatch({
-      type: ADD_POST,
+      type: ADD_COMMENT,
       payload: res.data,
     });
 
-    dispatch(setAlert('Post Created', 'success'));
+    dispatch(setAlert('Comment Added', 'success'));
+  } catch (err) {
+    dispatch({
+      type: POST_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status },
+    });
+  }
+};
+
+// Delete comment
+export const deleteComment = (postId, commentId) => async (dispatch) => {
+  try {
+    await axios.post(`/api/posts/comment/${postId}/${commentId}`);
+
+    dispatch({
+      type: REMOVE_COMMENT,
+      payload: commentId,
+    });
+
+    dispatch(setAlert('Comment Removed', 'success'));
   } catch (err) {
     dispatch({
       type: POST_ERROR,
